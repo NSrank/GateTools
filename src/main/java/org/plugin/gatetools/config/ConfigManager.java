@@ -1,5 +1,7 @@
 package org.plugin.gatetools.config;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -8,6 +10,7 @@ import org.plugin.gatetools.util.MessageUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -99,6 +102,94 @@ public class ConfigManager {
     
     public boolean isDebugEnabled() {
         return config.getBoolean("settings.debug", false);
+    }
+
+    // 内存管理配置方法
+    public long getMemoryLimit() {
+        return config.getLong("memory.limit", 100) * 1024 * 1024; // 转换为字节
+    }
+
+    public long getMemoryLeakThreshold() {
+        return config.getLong("memory.leak-threshold", 50) * 1024 * 1024; // 转换为字节
+    }
+
+    public int getMemoryMonitorInterval() {
+        return config.getInt("memory.monitor-interval", 300); // 秒
+    }
+
+    public int getMemoryLeakCheckCycles() {
+        return config.getInt("memory.leak-check-cycles", 6);
+    }
+
+    public boolean isMemoryAutoCleanupEnabled() {
+        return config.getBoolean("memory.auto-cleanup", true);
+    }
+
+    public int getMemoryCleanupInterval() {
+        return config.getInt("memory.cleanup-interval", 10); // 分钟
+    }
+
+    // 经济系统配置方法
+    public String getRecipientAccount() {
+        return config.getString("economy.recipient-account", "");
+    }
+
+    public boolean isTransferLoggingEnabled() {
+        return config.getBoolean("economy.transfer-logging", true);
+    }
+
+    public boolean isRecipientNotificationEnabled() {
+        return config.getBoolean("economy.notify-recipient", true);
+    }
+
+    /**
+     * 解析收款账户，支持UUID和玩家名自动识别
+     *
+     * @return 收款账户的OfflinePlayer对象，如果未配置或无效则返回null
+     */
+    public OfflinePlayer getRecipientPlayer() {
+        String account = getRecipientAccount();
+        if (account == null || account.trim().isEmpty()) {
+            return null;
+        }
+
+        account = account.trim();
+
+        try {
+            // 尝试解析为UUID
+            if (account.length() == 36 && account.contains("-")) {
+                UUID uuid = UUID.fromString(account);
+                return Bukkit.getOfflinePlayer(uuid);
+            }
+
+            // 尝试解析为没有连字符的UUID
+            if (account.length() == 32 && !account.contains("-")) {
+                String formattedUuid = account.substring(0, 8) + "-" +
+                                     account.substring(8, 12) + "-" +
+                                     account.substring(12, 16) + "-" +
+                                     account.substring(16, 20) + "-" +
+                                     account.substring(20, 32);
+                UUID uuid = UUID.fromString(formattedUuid);
+                return Bukkit.getOfflinePlayer(uuid);
+            }
+
+            // 作为玩家名处理
+            return Bukkit.getOfflinePlayer(account);
+
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("无效的收款账户配置: " + account + " - " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 验证收款账户是否有效
+     *
+     * @return 如果收款账户有效则返回true
+     */
+    public boolean isRecipientAccountValid() {
+        OfflinePlayer recipient = getRecipientPlayer();
+        return recipient != null && (recipient.hasPlayedBefore() || recipient.isOnline());
     }
     
     // 消息获取方法

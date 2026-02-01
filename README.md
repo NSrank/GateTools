@@ -8,6 +8,9 @@
 - **区域传送**: 通过设定矩形区域创建传送门
 - **交互式确认**: 玩家进入传送区域时显示确认界面
 - **条件系统**: 支持经验、权限、金钱等传送条件
+- **收款账户系统**: 传送费用可转账到指定玩家账户 🆕
+- **智能内存管理**: 精确监控插件内存使用，自动清理优化 🆕
+- **异步操作**: 关键操作异步执行，避免服务器卡顿 🆕
 - **权限管理**: 完整的权限节点系统
 - **数据持久化**: 自动保存和手动保存功能
 - **Vault集成**: 支持经济系统集成
@@ -20,7 +23,7 @@
 
 ## 安装方法
 
-1. 下载 `GateTools-1.1.jar` 文件
+1. 下载 `GateTools-1.2.jar` 文件
 2. 将文件放入服务器的 `plugins` 文件夹
 3. 重启服务器
 4. 插件将自动生成配置文件
@@ -83,10 +86,51 @@
 ## 配置文件
 
 ### config.yml
-主配置文件，包含插件设置、消息配置等。
+主配置文件，包含插件设置、内存管理、经济系统等配置。
+
+#### 收款账户配置 🆕
+```yaml
+economy:
+  # 收款账户设置 - 可以是玩家名或UUID，插件会自动识别
+  # 留空则禁用收款功能（费用直接扣除不转账）
+  recipient-account: ""
+
+  # 是否启用转账日志
+  transfer-logging: true
+
+  # 是否在转账时通知收款账户玩家（如果在线）
+  notify-recipient: true
+```
+
+**收款账户格式支持**：
+- 玩家名：`recipient-account: "PlayerName"`
+- UUID（带连字符）：`recipient-account: "550e8400-e29b-41d4-a716-446655440000"`
+- UUID（不带连字符）：`recipient-account: "550e8400e29b41d4a716446655440000"`
+
+#### 内存管理配置 🆕
+```yaml
+memory:
+  # 插件内存使用限制（MB）
+  limit: 32
+
+  # 内存泄漏检测阈值（MB）
+  leak-threshold: 16
+
+  # 内存监控间隔（秒）
+  monitor-interval: 300
+
+  # 是否启用自动内存清理
+  auto-cleanup: true
+
+  # 内存清理间隔（分钟）
+  cleanup-interval: 10
+```
 
 ### data.yml
 数据文件，存储所有传送门信息（自动生成）。
+
+### messages.yml
+消息配置文件，包含所有插件消息的本地化配置。
 
 ## 故障排除
 
@@ -124,11 +168,31 @@
 ## 开发信息
 
 - **作者**: NSrank, Augment
-- **版本**: 1.1
+- **版本**: 1.2
 - **许可证**: MIT
 - **源码**: https://github.com/NSrank/GateTools
 
 ## 更新日志
+
+### v1.2 🚀 **重大更新**
+- **收款账户系统** 💰: 传送费用可转账到指定玩家账户
+  - 支持UUID和玩家名格式的收款账户配置
+  - 自动识别账户格式，智能转账处理
+  - 包含转账日志和收款通知功能
+  - 支持转账失败时的安全回滚机制
+- **内存管理优化** 🧠: 重构内存监控系统
+  - 修复内存监控显示服务器内存而非插件内存的问题
+  - 实现基于插件实际使用量的精确内存监控
+  - 添加可配置的内存限制和自动清理机制
+  - 智能内存回收，包括空间索引重建和垃圾回收
+- **异步操作优化** ⚡: 全面异步化关键操作
+  - 传送执行、条件检查、费用扣除异步处理
+  - 自动保存和内存清理异步执行
+  - 避免主线程阻塞，提升服务器性能
+- **传送门条件显示** 📋: 新增条件信息显示功能
+  - 玩家进入传送门时自动显示使用条件
+  - 智能判断是否显示条件信息
+  - 支持权限、金钱、经验等条件的格式化显示
 
 ### v1.1
 - 修复消息配置重复问题
@@ -172,7 +236,7 @@ A powerful Minecraft Paper server teleportation gate plugin with region-based te
 
 ## Installation
 
-1. Download the `GateTools-1.1.jar` file
+1. Download the `GateTools-1.2.jar` file
 2. Place the file in your server's `plugins` folder
 3. Restart the server
 4. The plugin will automatically generate configuration files
@@ -206,6 +270,6 @@ A powerful Minecraft Paper server teleportation gate plugin with region-based te
 ## Development Information
 
 - **Authors**: NSrank, Augment
-- **Version**: 1.1
+- **Version**: 1.2
 - **License**: MIT
 - **Source Code**: https://github.com/NSrank/GateTools

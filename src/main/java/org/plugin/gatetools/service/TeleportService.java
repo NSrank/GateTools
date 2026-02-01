@@ -150,75 +150,89 @@ public class TeleportService {
     
     /**
      * 开始传送倒计时
-     * 
+     *
      * @param player 玩家
      * @param gate 传送门
      */
     private void startTeleport(Player player, Gate gate) {
         UUID playerId = player.getUniqueId();
-        
+
         // 发送准备消息
         String preparingMessage = configManager.getMessage("teleport.preparing");
         player.sendMessage(MessageUtil.colorize(preparingMessage));
-        
-        // 创建传送任务
+
+        // 创建异步传送任务
         int delay = configManager.getTeleportDelay();
-        BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            executeTeleport(player, gate);
+        BukkitTask task = plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+            // 传送操作需要在主线程执行，所以在异步任务中调度主线程任务
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                executeTeleport(player, gate);
+            });
         }, delay);
-        
+
         teleportTasks.put(playerId, task);
-        
+
         if (configManager.isDebugEnabled()) {
-            plugin.getLogger().info("开始传送倒计时: " + player.getName() + " -> " + gate.getDisplayName());
+            plugin.getLogger().info("开始异步传送倒计时: " + player.getName() + " -> " + gate.getDisplayName());
         }
     }
     
     /**
-     * 执行传送
-     * 
+     * 执行传送（在主线程中执行）
+     *
      * @param player 玩家
      * @param gate 传送门
      */
     private void executeTeleport(Player player, Gate gate) {
         UUID playerId = player.getUniqueId();
         teleportTasks.remove(playerId);
-        
-        // 再次检查条件（防止在等待期间条件发生变化）
-        ConditionService.ConditionResult result = conditionService.checkConditions(player, gate);
-        if (!result.isSuccess()) {
-            player.sendMessage(MessageUtil.colorize(result.getErrorMessage()));
-            return;
-        }
-        
-        // 获取传送目标
-        Location3D targetLocation = gate.getTeleportLocation();
-        if (targetLocation == null) {
-            String failedMessage = configManager.getMessage("error.teleport-failed");
-            player.sendMessage(MessageUtil.colorize(failedMessage));
-            return;
-        }
 
-        Location bukkitLocation = targetLocation.toBukkitLocation();
-        if (bukkitLocation == null) {
-            String failedMessage = configManager.getMessage("error.teleport-failed");
-            player.sendMessage(MessageUtil.colorize(failedMessage));
-            return;
-        }
-        
-        // 扣除费用
-        conditionService.applyCosts(player, gate);
-        
-        // 执行传送
-        player.teleport(bukkitLocation);
-        
-        // 发送成功消息
-        String successMessage = configManager.getMessage("success.teleport-success");
-        player.sendMessage(MessageUtil.colorize(successMessage));
-        
-        if (configManager.isDebugEnabled()) {
-            plugin.getLogger().info("传送完成: " + player.getName() + " -> " + targetLocation);
-        }
+        // 异步检查条件（防止在等待期间条件发生变化）
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            ConditionService.ConditionResult result = conditionService.checkConditions(player, gate);
+
+            // 回到主线程执行传送
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                if (!result.isSuccess()) {
+                    player.sendMessage(MessageUtil.colorize(result.getErrorMessage()));
+                    return;
+                }
+
+                // 获取传送目标
+                Location3D targetLocation = gate.getTeleportLocation();
+                if (targetLocation == null) {
+                    String failedMessage = configManager.getMessage("error.teleport-failed");
+                    player.sendMessage(MessageUtil.colorize(failedMessage));
+                    return;
+                }
+
+                Location bukkitLocation = targetLocation.toBukkitLocation();
+                if (bukkitLocation == null) {
+                    String failedMessage = configManager.getMessage("error.teleport-failed");
+                    player.sendMessage(MessageUtil.colorize(failedMessage));
+                    return;
+                }
+
+                // 异步扣除费用
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    conditionService.applyCosts(player, gate);
+
+                    // 回到主线程执行传送
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        // 执行传送
+                        player.teleport(bukkitLocation);
+
+                        // 发送成功消息
+                        String successMessage = configManager.getMessage("success.teleport-success");
+                        player.sendMessage(MessageUtil.colorize(successMessage));
+
+                        if (configManager.isDebugEnabled()) {
+                            plugin.getLogger().info("传送完成: " + player.getName() + " -> " + targetLocation);
+                        }
+                    });
+                });
+            });
+        });
     }
 
     /**

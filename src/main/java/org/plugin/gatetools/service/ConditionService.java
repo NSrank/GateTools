@@ -20,11 +20,13 @@ public class ConditionService {
     private final GateTools plugin;
     private final ConfigManager configManager;
     private Economy economy;
+    private final EconomyTransferService transferService;
     
     public ConditionService(GateTools plugin, ConfigManager configManager) {
         this.plugin = plugin;
         this.configManager = configManager;
         setupEconomy();
+        this.transferService = new EconomyTransferService(plugin, configManager, economy);
     }
     
     /**
@@ -235,11 +237,20 @@ public class ConditionService {
                 case EXPERIENCE:
                     int expCost = Integer.parseInt(condition.getValue());
                     player.setLevel(Math.max(0, player.getLevel() - expCost));
+                    if (configManager.isDebugEnabled()) {
+                        plugin.getLogger().info("扣除玩家 " + player.getName() + " 经验等级: " + expCost);
+                    }
                     break;
                 case MONEY:
                     if (economy != null) {
                         double moneyCost = Double.parseDouble(condition.getValue());
-                        economy.withdrawPlayer(player, moneyCost);
+                        // 使用转账服务处理金钱费用
+                        boolean success = transferService.transferTeleportFee(player, moneyCost);
+                        if (!success) {
+                            plugin.getLogger().warning("扣除玩家 " + player.getName() + " 传送费用失败: " + economy.format(moneyCost));
+                        } else if (configManager.isDebugEnabled()) {
+                            plugin.getLogger().info("成功处理玩家 " + player.getName() + " 传送费用: " + economy.format(moneyCost));
+                        }
                     }
                     break;
                 default:

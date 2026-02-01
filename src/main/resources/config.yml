@@ -18,3 +18,36 @@ settings:
 
   # 是否启用调试模式
   debug: false
+
+# 内存管理设置
+memory:
+  # 插件内存使用限制（MB）
+  limit: 32
+
+  # 内存泄漏检测阈值（MB）
+  leak-threshold: 16
+
+  # 内存监控间隔（秒）
+  monitor-interval: 300
+
+  # 内存泄漏检查周期数（达到此周期数后检查内存泄漏）
+  leak-check-cycles: 6
+
+  # 是否启用自动内存清理
+  auto-cleanup: true
+
+  # 内存清理间隔（分钟）
+  cleanup-interval: 10
+
+# 经济系统设置
+economy:
+  # 收款账户设置
+  # 可以是玩家名或UUID，插件会自动识别
+  # 留空则禁用收款功能（费用直接扣除不转账）
+  recipient-account: ""
+
+  # 是否启用转账日志
+  transfer-logging: true
+
+  # 是否在转账时通知收款账户玩家（如果在线）
+  notify-recipient: true

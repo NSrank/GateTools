@@ -169,7 +169,29 @@ public class GateManager {
      */
     private void startAutoSaveTask() {
         int interval = configManager.getAutoSaveInterval() * 60 * 20; // 转换为tick
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::saveGates, interval, interval);
+        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::autoSaveWithCleanup, interval, interval);
+    }
+
+    /**
+     * 自动保存并执行内存清理
+     */
+    private void autoSaveWithCleanup() {
+        try {
+            // 执行保存
+            saveGates();
+
+            // 如果启用了内存自动清理，触发内存监控器的清理
+            if (configManager.isMemoryAutoCleanupEnabled()) {
+                // 通过插件的内存监控器执行清理
+                // 这里我们不直接调用，而是让内存监控器在其定时任务中处理
+                if (configManager.isDebugEnabled()) {
+                    plugin.getLogger().info("自动保存完成，内存清理将由内存监控器处理");
+                }
+            }
+
+        } catch (Exception e) {
+            plugin.getLogger().warning("自动保存时出错: " + e.getMessage());
+        }
     }
     
     // 传送门操作方法
