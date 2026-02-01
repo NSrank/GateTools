@@ -61,7 +61,7 @@ public class ReloadCommand implements SubCommand {
             // 重载传送门数据
             plugin.getGateManager().loadGates();
             
-            String message = plugin.getConfigManager().getMessage("config-reloaded");
+            String message = plugin.getConfigManager().getMessage("success.config-reloaded");
             sender.sendMessage(MessageUtil.colorize(message));
             
             if (plugin.getConfigManager().isDebugEnabled()) {

@@ -31,6 +31,7 @@ import org.plugin.gatetools.listener.PlayerMovementListener;
 import org.plugin.gatetools.manager.GateManager;
 import org.plugin.gatetools.service.ConditionService;
 import org.plugin.gatetools.service.TeleportService;
+import org.plugin.gatetools.util.MemoryMonitor;
 
 /**
  * GateTools主类
@@ -44,6 +45,7 @@ public final class GateTools extends JavaPlugin {
     private GateManager gateManager;
     private ConditionService conditionService;
     private TeleportService teleportService;
+    private MemoryMonitor memoryMonitor;
 
     @Override
     public void onEnable() {
@@ -52,6 +54,7 @@ public final class GateTools extends JavaPlugin {
         this.gateManager = new GateManager(this, configManager);
         this.conditionService = new ConditionService(this, configManager);
         this.teleportService = new TeleportService(this, configManager, conditionService);
+        this.memoryMonitor = new MemoryMonitor(this);
 
         // 注册命令
         GateToolsCommand commandExecutor = new GateToolsCommand(this);
@@ -62,14 +65,22 @@ public final class GateTools extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
             new PlayerMovementListener(this, gateManager, teleportService), this);
 
+        // 启动内存监控
+        memoryMonitor.startMonitoring();
+
         getLogger().info("===================================");
-        getLogger().info("GateTools v1.0 已加载");
+        getLogger().info("GateTools v1.1 已加载");
         getLogger().info("作者: NSrank & Augment");
         getLogger().info("===================================");
     }
 
     @Override
     public void onDisable() {
+        // 停止内存监控
+        if (memoryMonitor != null) {
+            memoryMonitor.stopMonitoring();
+        }
+
         // 保存数据
         if (gateManager != null) {
             gateManager.saveGates();
@@ -93,5 +104,9 @@ public final class GateTools extends JavaPlugin {
 
     public TeleportService getTeleportService() {
         return teleportService;
+    }
+
+    public MemoryMonitor getMemoryMonitor() {
+        return memoryMonitor;
     }
 }

@@ -62,8 +62,8 @@ public class CancelTeleportCommand implements SubCommand {
         Player player = (Player) sender;
         
         plugin.getTeleportService().cancelTeleport(player.getUniqueId());
-        
-        String message = plugin.getConfigManager().getMessage("teleport-cancelled");
+
+        String message = plugin.getConfigManager().getMessage("error.teleport-cancelled");
         player.sendMessage(MessageUtil.colorize(message));
         
         if (plugin.getConfigManager().isDebugEnabled()) {

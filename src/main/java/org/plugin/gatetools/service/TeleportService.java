@@ -10,7 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.plugin.gatetools.GateTools;
 import org.plugin.gatetools.config.ConfigManager;
+import org.plugin.gatetools.config.MessageManager;
 import org.plugin.gatetools.model.Gate;
+import org.plugin.gatetools.model.GateCondition;
 import org.plugin.gatetools.model.Location3D;
 import org.plugin.gatetools.util.MessageUtil;
 
@@ -58,9 +60,12 @@ public class TeleportService {
         gate.playerStartConfirming(playerId);
         
         // 发送确认消息
-        String confirmMessage = configManager.getMessage("teleport-confirm")
+        String confirmMessage = configManager.getMessage("teleport.confirm")
                 .replace("%gate_name%", gate.getDisplayName());
         player.sendMessage(MessageUtil.colorize(confirmMessage));
+
+        // 显示传送门的使用条件（如果存在）
+        showGateConditions(player, gate);
         
         // 创建交互式按钮
         Component yesButton = Component.text(MessageUtil.stripColor(configManager.getYesButton()))
@@ -153,7 +158,7 @@ public class TeleportService {
         UUID playerId = player.getUniqueId();
         
         // 发送准备消息
-        String preparingMessage = configManager.getMessage("teleport-preparing");
+        String preparingMessage = configManager.getMessage("teleport.preparing");
         player.sendMessage(MessageUtil.colorize(preparingMessage));
         
         // 创建传送任务
@@ -189,14 +194,14 @@ public class TeleportService {
         // 获取传送目标
         Location3D targetLocation = gate.getTeleportLocation();
         if (targetLocation == null) {
-            String failedMessage = configManager.getMessage("teleport-failed");
+            String failedMessage = configManager.getMessage("error.teleport-failed");
             player.sendMessage(MessageUtil.colorize(failedMessage));
             return;
         }
-        
+
         Location bukkitLocation = targetLocation.toBukkitLocation();
         if (bukkitLocation == null) {
-            String failedMessage = configManager.getMessage("teleport-failed");
+            String failedMessage = configManager.getMessage("error.teleport-failed");
             player.sendMessage(MessageUtil.colorize(failedMessage));
             return;
         }
@@ -208,12 +213,98 @@ public class TeleportService {
         player.teleport(bukkitLocation);
         
         // 发送成功消息
-        String successMessage = configManager.getMessage("teleport-success");
+        String successMessage = configManager.getMessage("success.teleport-success");
         player.sendMessage(MessageUtil.colorize(successMessage));
         
         if (configManager.isDebugEnabled()) {
             plugin.getLogger().info("传送完成: " + player.getName() + " -> " + targetLocation);
         }
+    }
+
+    /**
+     * 显示传送门的使用条件
+     *
+     * @param player 玩家
+     * @param gate 传送门
+     */
+    private void showGateConditions(Player player, Gate gate) {
+        Map<GateCondition.ConditionType, GateCondition> conditions = gate.getConditions();
+
+        // 如果没有条件（除了传送目标），则不显示
+        boolean hasNonTeleportConditions = conditions.entrySet().stream()
+                .anyMatch(entry -> entry.getKey() != GateCondition.ConditionType.TELEPORT);
+
+        if (!hasNonTeleportConditions) {
+            return;
+        }
+
+        // 显示条件标题
+        player.sendMessage(MessageUtil.colorize("&e传送条件:"));
+
+        for (Map.Entry<GateCondition.ConditionType, GateCondition> entry : conditions.entrySet()) {
+            GateCondition.ConditionType type = entry.getKey();
+            GateCondition condition = entry.getValue();
+
+            // 跳过传送目标条件
+            if (type == GateCondition.ConditionType.TELEPORT) {
+                continue;
+            }
+
+            String conditionText = formatConditionText(condition);
+            if (conditionText != null && !conditionText.isEmpty()) {
+                player.sendMessage(MessageUtil.colorize("  &7- " + conditionText));
+            }
+        }
+    }
+
+    /**
+     * 格式化条件文本
+     *
+     * @param condition 条件
+     * @return 格式化后的条件文本
+     */
+    private String formatConditionText(GateCondition condition) {
+        MessageManager messageManager = configManager.getMessageManager();
+        if (messageManager == null) {
+            return null;
+        }
+
+        String operatorText = messageManager.translateOperator(condition.getCompareOperator());
+
+        switch (condition.getConditionType()) {
+            case PERMISSION:
+                if (condition.getJudgeType() == GateCondition.JudgeType.SET) {
+                    return messageManager.getMessageWithoutPrefix("condition.permission-required")
+                            .replace("%message_need_permission%", condition.getValue());
+                }
+                break;
+
+            case MONEY:
+                if (condition.getJudgeType() == GateCondition.JudgeType.SET) {
+                    return messageManager.getMessageWithoutPrefix("condition.money-required")
+                            .replace("%message_need_money%", condition.getValue());
+                } else if (condition.getJudgeType() == GateCondition.JudgeType.COST) {
+                    return messageManager.getMessageWithoutPrefix("condition.money-cost")
+                            .replace("%message_cost_money%", condition.getValue());
+                }
+                break;
+
+            case EXPERIENCE:
+                if (condition.getJudgeType() == GateCondition.JudgeType.SET) {
+                    return messageManager.getMessageWithoutPrefix("condition.experience-required")
+                            .replace("%message_need_experience%", condition.getValue());
+                } else if (condition.getJudgeType() == GateCondition.JudgeType.COST) {
+                    return messageManager.getMessageWithoutPrefix("condition.experience-cost")
+                            .replace("%message_cost_experience%", condition.getValue());
+                }
+                break;
+
+            case TELEPORT:
+                // 传送目标条件不需要显示
+                break;
+        }
+
+        return null;
     }
     
     /**

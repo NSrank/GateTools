@@ -21,10 +21,12 @@ public class ConfigManager {
     private FileConfiguration config;
     private FileConfiguration dataConfig;
     private File dataFile;
+    private MessageManager messageManager;
     
     public ConfigManager(GateTools plugin) {
         this.plugin = plugin;
         loadConfigs();
+        this.messageManager = new MessageManager(plugin);
     }
     
     /**
@@ -55,6 +57,9 @@ public class ConfigManager {
      */
     public void reloadConfigs() {
         loadConfigs();
+        if (messageManager != null) {
+            messageManager.reload();
+        }
     }
     
     /**
@@ -98,38 +103,64 @@ public class ConfigManager {
     
     // 消息获取方法
     public String getMessage(String key) {
+        if (messageManager != null) {
+            return messageManager.getMessage(key);
+        }
+        // 回退到旧方法
         String prefix = config.getString("messages.prefix", "&8[&6GateTools&8] &r");
         String message = config.getString("messages." + key, "&c消息未找到: " + key);
         return prefix + message;
     }
-    
+
     public String getMessageWithoutPrefix(String key) {
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix(key);
+        }
+        // 回退到旧方法
         return config.getString("messages." + key, "&c消息未找到: " + key);
     }
     
-    // 确认界面配置
+    // 确认界面配置 - 从MessageManager获取
     public String getYesButton() {
-        return config.getString("confirmation.yes-button", "&a[是]");
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix("confirmation.yes-button");
+        }
+        return "&a[是]";
     }
-    
+
     public String getNoButton() {
-        return config.getString("confirmation.no-button", "&c[否]");
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix("confirmation.no-button");
+        }
+        return "&c[否]";
     }
-    
+
     public String getYesHover() {
-        return config.getString("confirmation.yes-hover", "&a点击确认传送");
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix("confirmation.yes-hover");
+        }
+        return "&a点击确认传送";
     }
-    
+
     public String getNoHover() {
-        return config.getString("confirmation.no-hover", "&c点击取消传送");
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix("confirmation.no-hover");
+        }
+        return "&c点击取消传送";
     }
-    
+
     public String getYesCommand() {
-        return config.getString("confirmation.yes-command", "/gatetools confirm-teleport %gate_name%");
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix("confirmation.yes-command");
+        }
+        return "/gatetools confirm-teleport %gate_name%";
     }
-    
+
     public String getNoCommand() {
-        return config.getString("confirmation.no-command", "/gatetools cancel-teleport %gate_name%");
+        if (messageManager != null) {
+            return messageManager.getMessageWithoutPrefix("confirmation.no-command");
+        }
+        return "/gatetools cancel-teleport %gate_name%";
     }
     
     // Getters
@@ -143,6 +174,10 @@ public class ConfigManager {
     
     public File getDataFile() {
         return dataFile;
+    }
+
+    public MessageManager getMessageManager() {
+        return messageManager;
     }
 
     /**

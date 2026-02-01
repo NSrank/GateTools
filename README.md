@@ -1,6 +1,7 @@
 # GateTools - 传送门插件
 
-一个功能强大的Minecraft Paper服务器传送门插件，支持区域传送和权限管理。
+一个功能强大的Minecraft Paper服务器传送门插件，支持区域传送和权限管理。  
+> **注意**：本插件由 AI 辅助开发
 
 ## 功能特性
 
@@ -19,7 +20,7 @@
 
 ## 安装方法
 
-1. 下载 `GateTools-1.0.jar` 文件
+1. 下载 `GateTools-1.1.jar` 文件
 2. 将文件放入服务器的 `plugins` 文件夹
 3. 重启服务器
 4. 插件将自动生成配置文件
@@ -123,11 +124,17 @@
 ## 开发信息
 
 - **作者**: NSrank, Augment
-- **版本**: 1.0
+- **版本**: 1.1
 - **许可证**: MIT
 - **源码**: https://github.com/NSrank/GateTools
 
 ## 更新日志
+
+### v1.1
+- 修复消息配置重复问题
+- 将所有自定义消息统一到messages.yml文件
+- 移除config.yml中的重复消息配置
+- 优化消息管理系统
 
 ### v1.0
 - 初始版本发布
@@ -165,7 +172,7 @@ A powerful Minecraft Paper server teleportation gate plugin with region-based te
 
 ## Installation
 
-1. Download the `GateTools-1.0.jar` file
+1. Download the `GateTools-1.1.jar` file
 2. Place the file in your server's `plugins` folder
 3. Restart the server
 4. The plugin will automatically generate configuration files
@@ -199,6 +206,6 @@ A powerful Minecraft Paper server teleportation gate plugin with region-based te
 ## Development Information
 
 - **Authors**: NSrank, Augment
-- **Version**: 1.0
+- **Version**: 1.1
 - **License**: MIT
 - **Source Code**: https://github.com/NSrank/GateTools

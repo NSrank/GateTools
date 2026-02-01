@@ -1,81 +1,20 @@
 # GateTools 配置文件
 # 作者: NSrank, Augment
-# 版本: 1.0
+# 版本: 1.1
 
 # 基础设置
 settings:
   # 最大传送区域数量限制
   max-gates: 50
-  
+
   # 删除确认超时时间（秒）
   delete-confirm-timeout: 30
-  
+
   # 传送缓冲时间（tick，20tick = 1秒）
   teleport-delay: 60
-  
+
   # 自动保存间隔（分钟）
   auto-save-interval: 5
-  
+
   # 是否启用调试模式
   debug: false
-
-# 消息配置
-messages:
-  # 前缀
-  prefix: "&8[&6GateTools&8] &r"
-  
-  # 成功消息
-  gate-created: "&a成功创建传送区域 &e%gate_name%"
-  gate-edited: "&a成功编辑传送区域 &e%gate_name%"
-  gate-deleted: "&a成功删除传送区域 &e%gate_name%"
-  config-reloaded: "&a配置文件已重载"
-  data-saved: "&a数据已保存"
-  
-  # 错误消息
-  no-permission: "&c你没有权限执行此命令"
-  gate-not-found: "&c传送区域 &e%gate_name% &c不存在"
-  gate-already-exists: "&c传送区域 &e%gate_name% &c已存在"
-  max-gates-reached: "&c已达到最大传送区域数量限制 (%max_gates%)"
-  invalid-location: "&c无效的坐标格式"
-  invalid-condition: "&c无效的条件配置"
-  world-not-found: "&c世界 &e%world% &c不存在"
-  
-  # 传送相关消息
-  teleport-confirm: "&a你已进入传送区域 &e%gate_name%&a，是否传送？"
-  teleport-confirm-buttons: "&a[&2是&a] &c[&4否&c]"
-  teleport-cancelled: "&c传送已取消"
-  teleport-preparing: "&a正在准备传送，请稍候..."
-  teleport-success: "&a传送成功！"
-  teleport-failed: "&c传送失败"
-  
-  # 条件检查消息
-  insufficient-experience: "&c经验等级不足，需要 %required% 级"
-  insufficient-money: "&c金钱不足，需要 %required%"
-  missing-permission: "&c你没有传送权限"
-  
-  # 删除确认消息
-  delete-confirm-required: "&c请在 %timeout% 秒内输入 &e/gatetools confirm &c确认删除"
-  delete-confirm-expired: "&c删除确认已过期"
-  
-  # 命令帮助
-  help-header: "&6=== GateTools 帮助 ==="
-  help-set: "&e/gatetools set <角点1> <角点2> <配置名> <显示名> &7- 创建传送区域"
-  help-edit: "&e/gatetools edit <配置名> <配置项> <判断器> [值] &7- 编辑传送区域"
-  help-delete: "&e/gatetools delete <配置名> &7- 删除传送区域"
-  help-reload: "&e/gatetools reload &7- 重载配置文件"
-  help-save: "&e/gatetools save &7- 保存数据"
-  help-confirm: "&e/gatetools confirm &7- 确认删除操作"
-
-# 传送确认界面配置
-confirmation:
-  # 确认按钮文本
-  yes-button: "&a[是]"
-  no-button: "&c[否]"
-  
-  # 确认按钮悬停提示
-  yes-hover: "&a点击确认传送"
-  no-hover: "&c点击取消传送"
-  
-  # 确认按钮点击命令（内部使用）
-  yes-command: "/gatetools confirm-teleport %gate_name%"
-  no-command: "/gatetools cancel-teleport %gate_name%"

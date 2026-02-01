@@ -66,7 +66,7 @@ public class DeleteCommand implements SubCommand {
         Gate gate = plugin.getGateManager().getGate(gateName);
         
         if (gate == null) {
-            String message = plugin.getConfigManager().getMessage("gate-not-found")
+            String message = plugin.getConfigManager().getMessage("error.gate-not-found")
                     .replace("%gate_name%", gateName);
             sender.sendMessage(MessageUtil.colorize(message));
             return;
@@ -84,7 +84,7 @@ public class DeleteCommand implements SubCommand {
                 plugin.getGateManager().removeDeleteConfirmation(playerId);
                 
                 if (success) {
-                    String message = plugin.getConfigManager().getMessage("gate-deleted")
+                    String message = plugin.getConfigManager().getMessage("success.gate-deleted")
                             .replace("%gate_name%", gate.getDisplayName());
                     sender.sendMessage(MessageUtil.colorize(message));
                     
@@ -98,7 +98,8 @@ public class DeleteCommand implements SubCommand {
                 // 添加确认记录
                 plugin.getGateManager().addDeleteConfirmation(playerId);
                 
-                String message = plugin.getConfigManager().getMessage("delete-confirm-required")
+                String message = plugin.getConfigManager().getMessage("delete-confirmation.prompt")
+                        .replace("%gate_name%", gate.getDisplayName())
                         .replace("%timeout%", String.valueOf(plugin.getConfigManager().getDeleteConfirmTimeout()));
                 sender.sendMessage(MessageUtil.colorize(message));
             }
@@ -107,7 +108,7 @@ public class DeleteCommand implements SubCommand {
             boolean success = plugin.getGateManager().deleteGate(gateName);
             
             if (success) {
-                String message = plugin.getConfigManager().getMessage("gate-deleted")
+                String message = plugin.getConfigManager().getMessage("success.gate-deleted")
                         .replace("%gate_name%", gate.getDisplayName());
                 sender.sendMessage(MessageUtil.colorize(message));
                 

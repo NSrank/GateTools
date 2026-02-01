@@ -55,7 +55,7 @@ public class GateToolsCommand implements CommandExecutor, TabCompleter {
                            @NotNull String label, @NotNull String[] args) {
         // 检查基础权限
         if (!sender.hasPermission("gatetools.command")) {
-            String message = plugin.getConfigManager().getMessage("no-permission");
+            String message = plugin.getConfigManager().getMessage("error.no-permission");
             sender.sendMessage(plugin.getConfigManager().colorize(message));
             return true;
         }
@@ -74,17 +74,19 @@ public class GateToolsCommand implements CommandExecutor, TabCompleter {
         SubCommand subCommand = subCommands.get(subCommandName);
         
         if (subCommand == null) {
-            String message = plugin.getConfigManager().getMessage("invalid-command");
-            if (message.contains("消息未找到")) {
+            String message = plugin.getConfigManager().getMessage("error.invalid-command");
+            if (message.contains("消息未找到") || message.contains("Message not found")) {
                 message = "&c未知的子命令: " + args[0];
+            } else {
+                message = message.replace("%command%", args[0]);
             }
             sender.sendMessage(plugin.getConfigManager().colorize(message));
             return true;
         }
-        
+
         // 检查子命令权限
         if (!subCommand.hasPermission(sender)) {
-            String message = plugin.getConfigManager().getMessage("no-permission");
+            String message = plugin.getConfigManager().getMessage("error.no-permission");
             sender.sendMessage(plugin.getConfigManager().colorize(message));
             return true;
         }

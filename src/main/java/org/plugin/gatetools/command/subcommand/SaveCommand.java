@@ -58,7 +58,7 @@ public class SaveCommand implements SubCommand {
             // 异步保存数据
             plugin.getGateManager().saveGatesAsync();
             
-            String message = plugin.getConfigManager().getMessage("data-saved");
+            String message = plugin.getConfigManager().getMessage("success.data-saved");
             sender.sendMessage(MessageUtil.colorize(message));
             
             if (plugin.getConfigManager().isDebugEnabled()) {

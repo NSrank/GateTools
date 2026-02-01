@@ -68,7 +68,7 @@ public class EditCommand implements SubCommand {
         Gate gate = plugin.getGateManager().getGate(gateName);
 
         if (gate == null) {
-            String message = plugin.getConfigManager().getMessage("gate-not-found")
+            String message = plugin.getConfigManager().getMessage("error.gate-not-found")
                     .replace("%gate_name%", gateName);
             sender.sendMessage(MessageUtil.colorize(message));
             return;
@@ -166,7 +166,7 @@ public class EditCommand implements SubCommand {
             gate.addCondition(condition);
             plugin.getGateManager().saveGatesAsync();
 
-            String message = plugin.getConfigManager().getMessage("gate-edited")
+            String message = plugin.getConfigManager().getMessage("success.gate-edited")
                     .replace("%gate_name%", gate.getDisplayName());
             sender.sendMessage(MessageUtil.colorize(message));
 
@@ -182,7 +182,7 @@ public class EditCommand implements SubCommand {
             }
 
         } catch (IllegalArgumentException e) {
-            String message = plugin.getConfigManager().getMessage("invalid-condition");
+            String message = plugin.getConfigManager().getMessage("error.invalid-condition");
             sender.sendMessage(MessageUtil.colorize(message));
             sender.sendMessage(MessageUtil.colorize("&c错误: " + e.getMessage()));
         } catch (Exception e) {

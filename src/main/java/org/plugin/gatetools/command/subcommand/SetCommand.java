@@ -77,7 +77,7 @@ public class SetCommand implements SubCommand {
             
             // 检查配置名是否已存在
             if (plugin.getGateManager().getGate(configName) != null) {
-                String message = plugin.getConfigManager().getMessage("gate-already-exists")
+                String message = plugin.getConfigManager().getMessage("error.gate-already-exists")
                         .replace("%gate_name%", configName);
                 sender.sendMessage(MessageUtil.colorize(message));
                 return;
@@ -87,7 +87,7 @@ public class SetCommand implements SubCommand {
             boolean success = plugin.getGateManager().createGate(configName, displayName, corner1, corner2);
             
             if (success) {
-                String message = plugin.getConfigManager().getMessage("gate-created")
+                String message = plugin.getConfigManager().getMessage("success.gate-created")
                         .replace("%gate_name%", displayName);
                 sender.sendMessage(MessageUtil.colorize(message));
                 
@@ -95,13 +95,13 @@ public class SetCommand implements SubCommand {
                     plugin.getLogger().info("玩家 " + sender.getName() + " 创建了传送门: " + configName);
                 }
             } else {
-                String message = plugin.getConfigManager().getMessage("max-gates-reached")
+                String message = plugin.getConfigManager().getMessage("error.max-gates-reached")
                         .replace("%max_gates%", String.valueOf(plugin.getConfigManager().getMaxGates()));
                 sender.sendMessage(MessageUtil.colorize(message));
             }
             
         } catch (IllegalArgumentException e) {
-            String message = plugin.getConfigManager().getMessage("invalid-location");
+            String message = plugin.getConfigManager().getMessage("error.invalid-location");
             sender.sendMessage(MessageUtil.colorize(message));
             
             // 提供格式示例

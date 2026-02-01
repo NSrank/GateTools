@@ -57,9 +57,14 @@ public class HelpCommand implements SubCommand {
     
     @Override
     public void execute(CommandSender sender, String[] args) {
-        sender.sendMessage(MessageUtil.colorize("&6=== GateTools 帮助 ==="));
-        sender.sendMessage(MessageUtil.colorize("&e作者: &fNSrank, Augment"));
-        sender.sendMessage(MessageUtil.colorize("&e版本: &f1.0"));
+        // 使用messages.yml中的帮助消息
+        String header = plugin.getConfigManager().getMessageWithoutPrefix("help.header");
+        String author = plugin.getConfigManager().getMessageWithoutPrefix("help.author");
+        String version = plugin.getConfigManager().getMessageWithoutPrefix("help.version");
+
+        sender.sendMessage(MessageUtil.colorize(header));
+        sender.sendMessage(MessageUtil.colorize(author));
+        sender.sendMessage(MessageUtil.colorize(version));
         sender.sendMessage("");
         
         // 显示可用命令

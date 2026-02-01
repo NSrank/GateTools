@@ -121,8 +121,9 @@ public class ConditionService {
             if (condition.getJudgeType() == GateCondition.JudgeType.SET) {
                 boolean result = compareValues(playerLevel, requiredLevel, condition.getCompareOperator());
                 if (!result) {
-                    String message = configManager.getMessage("insufficient-experience")
-                            .replace("%required%", String.valueOf(requiredLevel));
+                    String message = configManager.getMessage("condition.experience-insufficient")
+                            .replace("%message_need_experience%", String.valueOf(requiredLevel))
+                            .replace("%current_experience%", String.valueOf(playerLevel));
                     return ConditionResult.failure(message);
                 }
             }
@@ -142,10 +143,12 @@ public class ConditionService {
         boolean hasPermission = player.hasPermission(permission);
         
         if (condition.getCompareOperator() == GateCondition.CompareOperator.EQUAL && !hasPermission) {
-            String message = configManager.getMessage("missing-permission");
+            String message = configManager.getMessage("condition.permission-denied")
+                    .replace("%message_need_permission%", permission);
             return ConditionResult.failure(message);
         } else if (condition.getCompareOperator() == GateCondition.CompareOperator.NOT_EQUAL && hasPermission) {
-            String message = configManager.getMessage("missing-permission");
+            String message = configManager.getMessage("condition.permission-denied")
+                    .replace("%message_need_permission%", permission);
             return ConditionResult.failure(message);
         }
         
@@ -167,14 +170,16 @@ public class ConditionService {
             if (condition.getJudgeType() == GateCondition.JudgeType.SET) {
                 boolean result = compareValues(playerMoney, requiredMoney, condition.getCompareOperator());
                 if (!result) {
-                    String message = configManager.getMessage("insufficient-money")
-                            .replace("%required%", economy.format(requiredMoney));
+                    String message = configManager.getMessage("condition.money-insufficient")
+                            .replace("%message_need_money%", economy.format(requiredMoney))
+                            .replace("%current_money%", economy.format(playerMoney));
                     return ConditionResult.failure(message);
                 }
             } else if (condition.getJudgeType() == GateCondition.JudgeType.COST) {
                 if (playerMoney < requiredMoney) {
-                    String message = configManager.getMessage("insufficient-money")
-                            .replace("%required%", economy.format(requiredMoney));
+                    String message = configManager.getMessage("condition.money-insufficient")
+                            .replace("%message_need_money%", economy.format(requiredMoney))
+                            .replace("%current_money%", economy.format(playerMoney));
                     return ConditionResult.failure(message);
                 }
             }
