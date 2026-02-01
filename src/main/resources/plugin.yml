@@ -1,0 +1,39 @@
+name: GateTools
+version: '${project.version}'
+main: org.plugin.gatetools.GateTools
+api-version: '1.20'
+load: STARTUP
+authors: [NSrank, Augment]
+description: 传送门插件，支持区域传送和权限管理
+website: https://github.com/NSrank/GateTools
+softdepend: [Vault]
+
+commands:
+  gatetools:
+    description: GateTools主命令
+    usage: /gatetools <set|edit|delete|reload|save|confirm>
+    permission: gatetools.command
+    aliases: [gt]
+
+permissions:
+  gatetools.command:
+    description: 使用GateTools命令的基础权限
+    default: op
+  gatetools.command.set:
+    description: 创建传送区域的权限
+    default: op
+  gatetools.command.edit:
+    description: 编辑传送区域的权限
+    default: op
+  gatetools.command.delete:
+    description: 删除传送区域的权限
+    default: op
+  gatetools.command.reload:
+    description: 重载配置文件的权限
+    default: op
+  gatetools.command.save:
+    description: 保存数据的权限
+    default: op
+  gatetools.use:
+    description: 使用传送门的基础权限
+    default: true
