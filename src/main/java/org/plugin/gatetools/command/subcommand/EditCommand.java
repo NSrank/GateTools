@@ -11,6 +11,7 @@ import org.plugin.gatetools.util.MessageUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 编辑传送门命令
@@ -37,7 +38,7 @@ public class EditCommand implements SubCommand {
     
     @Override
     public String getUsage() {
-        return "/gatetools edit <配置名> <配置项> <判断器> [值]";
+        return "/gatetools edit <配置名> <配置项> <判断器> [值] | owner <玩家1> [玩家2] | log <enable|disable>";
     }
     
     @Override
@@ -59,8 +60,11 @@ public class EditCommand implements SubCommand {
     public void execute(CommandSender sender, String[] args) {
         if (args.length < 2) {
             sender.sendMessage(MessageUtil.colorize("&c用法: " + getUsage()));
-            sender.sendMessage(MessageUtil.colorize("&e配置项: experience, permission, money, teleport"));
+            sender.sendMessage(MessageUtil.colorize("&e配置项: experience, permission, money, teleport, owner, log"));
             sender.sendMessage(MessageUtil.colorize("&e判断器: set, cost (teleport配置项直接接坐标)"));
+            sender.sendMessage(MessageUtil.colorize("&e特殊用法:"));
+            sender.sendMessage(MessageUtil.colorize("&e  owner <玩家1> [玩家2] - 设置传送门所有者"));
+            sender.sendMessage(MessageUtil.colorize("&e  log <enable|disable> - 启用/禁用传送凭证"));
             return;
         }
 
@@ -74,11 +78,23 @@ public class EditCommand implements SubCommand {
             return;
         }
 
-        String conditionTypeStr = args[1];
-        GateCondition.ConditionType conditionType = GateCondition.ConditionType.fromKey(conditionTypeStr);
+        String configType = args[1];
+
+        // 处理新的配置类型：owner 和 log
+        if ("owner".equalsIgnoreCase(configType)) {
+            handleOwnerCommand(sender, gate, args);
+            return;
+        } else if ("log".equalsIgnoreCase(configType)) {
+            handleLogCommand(sender, gate, args);
+            return;
+        }
+
+        // 处理传统的条件配置
+        GateCondition.ConditionType conditionType = GateCondition.ConditionType.fromKey(configType);
 
         if (conditionType == null) {
-            sender.sendMessage(MessageUtil.colorize("&c无效的配置项: " + conditionTypeStr));
+            sender.sendMessage(MessageUtil.colorize("&c无效的配置项: " + configType));
+            sender.sendMessage(MessageUtil.colorize("&e可用配置项: experience, permission, money, teleport, owner, log"));
             return;
         }
 
@@ -205,7 +221,7 @@ public class EditCommand implements SubCommand {
             }
         } else if (args.length == 2) {
             // 配置项补全
-            String[] conditionTypes = {"experience", "permission", "money", "teleport"};
+            String[] conditionTypes = {"experience", "permission", "money", "teleport", "owner", "log"};
             for (String type : conditionTypes) {
                 if (type.startsWith(args[1].toLowerCase())) {
                     completions.add(type);
@@ -227,6 +243,24 @@ public class EditCommand implements SubCommand {
                     completions.add(suggestion);
                 } else {
                     completions.add("world,x,y,z");
+                }
+            } else if ("owner".equals(conditionType)) {
+                // owner配置项提供玩家名补全和clear选项
+                completions.add("clear");
+                // 添加在线玩家名
+                for (org.bukkit.entity.Player player : plugin.getServer().getOnlinePlayers()) {
+                    String playerName = player.getName();
+                    if (playerName.toLowerCase().startsWith(args[2].toLowerCase())) {
+                        completions.add(playerName);
+                    }
+                }
+            } else if ("log".equals(conditionType)) {
+                // log配置项提供enable/disable选项
+                String[] logOptions = {"enable", "disable"};
+                for (String option : logOptions) {
+                    if (option.startsWith(args[2].toLowerCase())) {
+                        completions.add(option);
+                    }
                 }
             } else {
                 // 其他配置项提供判断器补全
@@ -271,8 +305,138 @@ public class EditCommand implements SubCommand {
                 completions.add("50");
                 completions.add("100");
             }
+        } else if (args.length == 4 && "owner".equals(args[1].toLowerCase())) {
+            // owner命令的第二个玩家参数补全
+            for (org.bukkit.entity.Player player : plugin.getServer().getOnlinePlayers()) {
+                String playerName = player.getName();
+                if (playerName.toLowerCase().startsWith(args[3].toLowerCase())) {
+                    completions.add(playerName);
+                }
+            }
         }
 
         return completions;
+    }
+
+    /**
+     * 处理owner命令
+     * 用法: /gatetools edit <配置名> owner <所有者1ID> [所有者2ID]
+     */
+    private void handleOwnerCommand(CommandSender sender, Gate gate, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(MessageUtil.colorize("&c用法: /gatetools edit <配置名> owner <所有者1ID> [所有者2ID]"));
+            sender.sendMessage(MessageUtil.colorize("&e示例: /gatetools edit gate1 owner Player1 Player2"));
+            sender.sendMessage(MessageUtil.colorize("&e清除所有者: /gatetools edit gate1 owner clear"));
+            return;
+        }
+
+        String owner1 = args[2];
+
+        // 检查是否是清除命令
+        if ("clear".equalsIgnoreCase(owner1)) {
+            gate.setOwners(new ArrayList<>());
+            plugin.getGateManager().saveGates();
+
+            String message = plugin.getConfigManager().getMessage("success.gate-edited")
+                    .replace("%gate_name%", gate.getDisplayName());
+            sender.sendMessage(MessageUtil.colorize(message));
+            sender.sendMessage(MessageUtil.colorize("&a已清除传送门所有者"));
+            return;
+        }
+
+        // 验证所有者1
+        org.bukkit.OfflinePlayer offlinePlayer1 = plugin.getServer().getOfflinePlayer(owner1);
+        if (offlinePlayer1 == null || (!offlinePlayer1.hasPlayedBefore() && !offlinePlayer1.isOnline())) {
+            sender.sendMessage(MessageUtil.colorize("&c玩家 " + owner1 + " 不存在或从未加入过服务器"));
+            return;
+        }
+
+        // 创建新的所有者列表
+        List<UUID> newOwners = new ArrayList<>();
+        newOwners.add(offlinePlayer1.getUniqueId());
+
+        // 处理第二个所有者（可选）
+        if (args.length >= 4) {
+            String owner2 = args[3];
+            org.bukkit.OfflinePlayer offlinePlayer2 = plugin.getServer().getOfflinePlayer(owner2);
+            if (offlinePlayer2 == null || (!offlinePlayer2.hasPlayedBefore() && !offlinePlayer2.isOnline())) {
+                sender.sendMessage(MessageUtil.colorize("&c玩家 " + owner2 + " 不存在或从未加入过服务器"));
+                return;
+            }
+
+            // 检查是否是同一个玩家
+            if (offlinePlayer1.getUniqueId().equals(offlinePlayer2.getUniqueId())) {
+                sender.sendMessage(MessageUtil.colorize("&c不能设置相同的玩家为两个所有者"));
+                return;
+            }
+
+            newOwners.add(offlinePlayer2.getUniqueId());
+        }
+
+        // 设置新的所有者列表
+        gate.setOwners(newOwners);
+
+        // 保存配置（使用同步保存确保数据立即写入）
+        plugin.getGateManager().saveGates();
+
+        // 调试日志：显示设置后的所有者信息
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("设置所有者后，传送门 " + gate.getDisplayName() + " 的所有者数量: " + gate.getOwners().size());
+            for (int i = 0; i < gate.getOwners().size(); i++) {
+                plugin.getLogger().info("所有者 " + (i + 1) + ": " + gate.getOwners().get(i));
+            }
+        }
+
+        String message = plugin.getConfigManager().getMessage("success.gate-edited")
+                .replace("%gate_name%", gate.getDisplayName());
+        sender.sendMessage(MessageUtil.colorize(message));
+
+        if (gate.getOwners().size() == 1) {
+            sender.sendMessage(MessageUtil.colorize("&a已设置传送门所有者: " + owner1));
+        } else {
+            String owner2 = args.length >= 4 ? args[3] : "未知";
+            sender.sendMessage(MessageUtil.colorize("&a已设置传送门所有者: " + owner1 + ", " + owner2));
+        }
+    }
+
+    /**
+     * 处理log命令
+     * 用法: /gatetools edit <配置名> log <enable|disable>
+     */
+    private void handleLogCommand(CommandSender sender, Gate gate, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(MessageUtil.colorize("&c用法: /gatetools edit <配置名> log <enable|disable>"));
+            sender.sendMessage(MessageUtil.colorize("&e示例: /gatetools edit gate1 log enable"));
+            return;
+        }
+
+        String action = args[2];
+        boolean enableLog;
+
+        if ("enable".equalsIgnoreCase(action)) {
+            enableLog = true;
+        } else if ("disable".equalsIgnoreCase(action)) {
+            enableLog = false;
+        } else {
+            sender.sendMessage(MessageUtil.colorize("&c无效的操作: " + action));
+            sender.sendMessage(MessageUtil.colorize("&e请使用 enable 或 disable"));
+            return;
+        }
+
+        // 设置日志状态
+        gate.setLogEnabled(enableLog);
+
+        // 保存配置（使用同步保存确保数据立即写入）
+        plugin.getGateManager().saveGates();
+
+        String message = plugin.getConfigManager().getMessage("success.gate-edited")
+                .replace("%gate_name%", gate.getDisplayName());
+        sender.sendMessage(MessageUtil.colorize(message));
+
+        if (enableLog) {
+            sender.sendMessage(MessageUtil.colorize("&a已启用传送门日志功能，玩家传送后将获得传送凭证"));
+        } else {
+            sender.sendMessage(MessageUtil.colorize("&c已禁用传送门日志功能"));
+        }
     }
 }

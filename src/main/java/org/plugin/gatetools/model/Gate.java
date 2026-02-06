@@ -19,6 +19,8 @@ public class Gate {
     private final Map<GateCondition.ConditionType, GateCondition> conditions;
     private final Set<UUID> playersInside;
     private final Set<UUID> playersConfirming;
+    private final List<UUID> owners; // 传送门所有者列表（最多2个）
+    private boolean logEnabled; // 是否启用传送日志功能
     
     /**
      * 构造函数
@@ -36,6 +38,8 @@ public class Gate {
         this.conditions = new HashMap<>();
         this.playersInside = new HashSet<>();
         this.playersConfirming = new HashSet<>();
+        this.owners = new ArrayList<>();
+        this.logEnabled = false;
     }
     
     /**
@@ -170,6 +174,41 @@ public class Gate {
     public Map<GateCondition.ConditionType, GateCondition> getConditions() { return new HashMap<>(conditions); }
     public Set<UUID> getPlayersInside() { return new HashSet<>(playersInside); }
     public Set<UUID> getPlayersConfirming() { return new HashSet<>(playersConfirming); }
+
+    // 所有者相关方法
+    public List<UUID> getOwners() { return new ArrayList<>(owners); }
+
+    public void setOwners(List<UUID> newOwners) {
+        this.owners.clear();
+        if (newOwners != null && !newOwners.isEmpty()) {
+            // 最多只能设置2个所有者
+            int maxOwners = Math.min(newOwners.size(), 2);
+            for (int i = 0; i < maxOwners; i++) {
+                this.owners.add(newOwners.get(i));
+            }
+        }
+    }
+
+    public void addOwner(UUID ownerUuid) {
+        if (ownerUuid != null && !owners.contains(ownerUuid) && owners.size() < 2) {
+            owners.add(ownerUuid);
+        }
+    }
+
+    public void removeOwner(UUID ownerUuid) {
+        owners.remove(ownerUuid);
+    }
+
+    public void clearOwners() {
+        owners.clear();
+    }
+
+    // 日志功能相关方法
+    public boolean isLogEnabled() { return logEnabled; }
+
+    public void setLogEnabled(boolean enabled) {
+        this.logEnabled = enabled;
+    }
     
     @Override
     public String toString() {

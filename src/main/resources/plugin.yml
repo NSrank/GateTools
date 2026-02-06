@@ -37,3 +37,6 @@ permissions:
   gatetools.use:
     description: 使用传送门的基础权限
     default: true
+  gatetools.free:
+    description: 免费传送权限，拥有此权限的玩家传送时不扣除金钱和经验
+    default: false

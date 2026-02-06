@@ -30,6 +30,7 @@ import org.plugin.gatetools.config.ConfigManager;
 import org.plugin.gatetools.listener.PlayerMovementListener;
 import org.plugin.gatetools.manager.GateManager;
 import org.plugin.gatetools.service.ConditionService;
+import org.plugin.gatetools.service.TeleportReceiptService;
 import org.plugin.gatetools.service.TeleportService;
 import org.plugin.gatetools.util.MemoryMonitor;
 
@@ -45,6 +46,7 @@ public final class GateTools extends JavaPlugin {
     private GateManager gateManager;
     private ConditionService conditionService;
     private TeleportService teleportService;
+    private TeleportReceiptService receiptService;
     private MemoryMonitor memoryMonitor;
 
     @Override
@@ -54,6 +56,7 @@ public final class GateTools extends JavaPlugin {
         this.gateManager = new GateManager(this, configManager);
         this.conditionService = new ConditionService(this, configManager);
         this.teleportService = new TeleportService(this, configManager, conditionService);
+        this.receiptService = new TeleportReceiptService(this);
         this.memoryMonitor = new MemoryMonitor(this);
 
         // 注册命令
@@ -69,7 +72,7 @@ public final class GateTools extends JavaPlugin {
         memoryMonitor.startMonitoring();
 
         getLogger().info("===================================");
-        getLogger().info("GateTools v1.1 已加载");
+        getLogger().info("GateTools v1.3 已加载");
         getLogger().info("作者: NSrank & Augment");
         getLogger().info("===================================");
     }
@@ -104,6 +107,10 @@ public final class GateTools extends JavaPlugin {
 
     public TeleportService getTeleportService() {
         return teleportService;
+    }
+
+    public TeleportReceiptService getReceiptService() {
+        return receiptService;
     }
 
     public MemoryMonitor getMemoryMonitor() {

@@ -213,6 +213,9 @@ public class TeleportService {
                     return;
                 }
 
+                // 计算传送费用（用于生成凭证）
+                double teleportCost = calculateTeleportCost(player, gate);
+
                 // 异步扣除费用
                 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                     conditionService.applyCosts(player, gate);
@@ -226,6 +229,11 @@ public class TeleportService {
                         String successMessage = configManager.getMessage("success.teleport-success");
                         player.sendMessage(MessageUtil.colorize(successMessage));
 
+                        // 生成传送凭证（如果启用）
+                        if (gate.isLogEnabled()) {
+                            plugin.getReceiptService().giveReceiptToPlayer(player, gate, teleportCost);
+                        }
+
                         if (configManager.isDebugEnabled()) {
                             plugin.getLogger().info("传送完成: " + player.getName() + " -> " + targetLocation);
                         }
@@ -233,6 +241,35 @@ public class TeleportService {
                 });
             });
         });
+    }
+
+    /**
+     * 计算传送费用（仅计算金钱费用，用于生成凭证）
+     *
+     * @param player 玩家
+     * @param gate 传送门
+     * @return 传送费用
+     */
+    private double calculateTeleportCost(Player player, Gate gate) {
+        // 检查玩家是否拥有免费传送权限
+        if (player.hasPermission("gatetools.free")) {
+            return 0.0;
+        }
+
+        // 查找金钱费用条件
+        for (GateCondition condition : gate.getConditions().values()) {
+            if (condition.getJudgeType() == GateCondition.JudgeType.COST &&
+                condition.getConditionType() == GateCondition.ConditionType.MONEY) {
+                try {
+                    return Double.parseDouble(condition.getValue());
+                } catch (NumberFormatException e) {
+                    plugin.getLogger().warning("无效的金钱费用配置: " + condition.getValue());
+                    return 0.0;
+                }
+            }
+        }
+
+        return 0.0; // 没有金钱费用
     }
 
     /**

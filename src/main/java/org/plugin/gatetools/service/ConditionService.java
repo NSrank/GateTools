@@ -216,14 +216,22 @@ public class ConditionService {
     
     /**
      * 应用传送费用（扣除经验、金钱等）
-     * 
+     *
      * @param player 玩家
      * @param gate 传送门
      */
     public void applyCosts(Player player, Gate gate) {
+        // 检查玩家是否拥有免费传送权限
+        if (player.hasPermission("gatetools.free")) {
+            if (configManager.isDebugEnabled()) {
+                plugin.getLogger().info("玩家 " + player.getName() + " 拥有免费传送权限，跳过费用扣除");
+            }
+            return;
+        }
+
         for (GateCondition condition : gate.getConditions().values()) {
             if (condition.getJudgeType() == GateCondition.JudgeType.COST) {
-                applySingleCost(player, condition);
+                applySingleCost(player, condition, gate);
             }
         }
     }
@@ -231,7 +239,7 @@ public class ConditionService {
     /**
      * 应用单个费用
      */
-    private void applySingleCost(Player player, GateCondition condition) {
+    private void applySingleCost(Player player, GateCondition condition, Gate gate) {
         try {
             switch (condition.getConditionType()) {
                 case EXPERIENCE:
@@ -244,8 +252,8 @@ public class ConditionService {
                 case MONEY:
                     if (economy != null) {
                         double moneyCost = Double.parseDouble(condition.getValue());
-                        // 使用转账服务处理金钱费用
-                        boolean success = transferService.transferTeleportFee(player, moneyCost);
+                        // 使用转账服务处理金钱费用（支持传送门所有者系统）
+                        boolean success = transferService.transferTeleportFee(player, moneyCost, gate);
                         if (!success) {
                             plugin.getLogger().warning("扣除玩家 " + player.getName() + " 传送费用失败: " + economy.format(moneyCost));
                         } else if (configManager.isDebugEnabled()) {

@@ -9,10 +9,7 @@ import org.plugin.gatetools.model.GateCondition;
 import org.plugin.gatetools.model.Location3D;
 import org.plugin.gatetools.spatial.SpatialIndexManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -100,10 +97,29 @@ public class GateManager {
                         }
                     }
                 }
-                
+
+                // 加载所有者信息
+                List<String> ownerStrings = gateSection.getStringList("owners");
+                if (ownerStrings != null && !ownerStrings.isEmpty()) {
+                    List<UUID> owners = new ArrayList<>();
+                    for (String ownerString : ownerStrings) {
+                        try {
+                            UUID ownerId = UUID.fromString(ownerString);
+                            owners.add(ownerId);
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().warning("传送门 " + gateName + " 的所有者UUID格式错误: " + ownerString);
+                        }
+                    }
+                    gate.setOwners(owners);
+                }
+
+                // 加载日志功能状态
+                boolean logEnabled = gateSection.getBoolean("log-enabled", false);
+                gate.setLogEnabled(logEnabled);
+
                 gates.put(gateName, gate);
                 if (configManager.isDebugEnabled()) {
-                    plugin.getLogger().info("已加载传送门: " + gateName);
+                    plugin.getLogger().info("已加载传送门: " + gateName + " (所有者: " + gate.getOwners().size() + ", 日志: " + gate.isLogEnabled() + ")");
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "加载传送门 " + gateName + " 时出错", e);
@@ -142,13 +158,26 @@ public class GateManager {
             for (Map.Entry<GateCondition.ConditionType, GateCondition> entry : conditions.entrySet()) {
                 GateCondition condition = entry.getValue();
                 String conditionPath = path + ".conditions." + condition.getConditionType().getKey();
-                
+
                 dataConfig.set(conditionPath + ".judge-type", condition.getJudgeType().getKey());
                 dataConfig.set(conditionPath + ".value", condition.getValue());
                 if (condition.getCompareOperator() != null) {
                     dataConfig.set(conditionPath + ".operator", condition.getCompareOperator().getSymbol());
                 }
             }
+
+            // 保存所有者信息
+            List<UUID> owners = gate.getOwners();
+            if (!owners.isEmpty()) {
+                List<String> ownerStrings = new ArrayList<>();
+                for (UUID ownerId : owners) {
+                    ownerStrings.add(ownerId.toString());
+                }
+                dataConfig.set(path + ".owners", ownerStrings);
+            }
+
+            // 保存日志功能状态
+            dataConfig.set(path + ".log-enabled", gate.isLogEnabled());
         }
         
         configManager.saveData();
