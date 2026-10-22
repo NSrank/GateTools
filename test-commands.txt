@@ -1,0 +1,53 @@
+# GateTools 测试命令
+# 请在Minecraft服务器中按顺序执行这些命令来测试插件功能
+
+# 1. 启用调试模式（在config.yml中设置debug: true，然后重载）
+/gatetools reload
+
+# 2. 创建一个测试传送门
+/gatetools set world,100,64,100 world,110,74,110 testgate 测试传送门
+
+# 3. 设置传送目标
+/gatetools edit testgate teleport world,200,64,200
+
+# 4. 设置权限要求（可选）
+/gatetools edit testgate permission set = teleport.test
+
+# 5. 设置金钱费用（可选，需要Vault）
+/gatetools edit testgate money cost 100
+
+# 6. 设置经验要求（可选）
+/gatetools edit testgate experience set >= 5
+
+# 7. 测试传送
+# 走到坐标 world 100-110, 64-74, 100-110 范围内
+# 应该会看到传送确认消息
+
+# 8. 查看帮助
+/gatetools help
+
+# 9. 保存数据
+/gatetools save
+
+# 10. 删除测试传送门
+/gatetools delete testgate
+/gatetools confirm
+
+# Tab补全测试：
+# - /gatetools edit testgate teleport <TAB> 应该显示坐标格式提示，而不是 set/cost
+# - /gatetools edit testgate money <TAB> 应该显示 set/cost
+# - /gatetools edit testgate permission <TAB> 应该显示 set/cost
+
+# 八叉树空间索引测试：
+# 创建多个传送门测试性能和空间索引
+/gatetools set world,200,64,200 world,210,74,210 gate2 传送门2
+/gatetools edit gate2 teleport world,300,64,300
+/gatetools set world,300,64,300 world,310,74,310 gate3 传送门3
+/gatetools edit gate3 teleport world,100,64,100
+
+# 注意事项：
+# - 确保玩家有相应的权限
+# - 如果传送不工作，检查控制台的调试信息
+# - 传送目标的世界必须存在
+# - 坐标格式必须正确：世界名,x,y,z
+# - 调试模式下会显示空间索引统计信息和玩家进入/离开传送区域的日志

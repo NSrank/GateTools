@@ -1,0 +1,98 @@
+# GateTools 消息配置文件
+# 支持颜色代码 (&a, &c, &e 等)
+# 支持占位符替换
+
+# 消息前缀
+prefix: "&8[&6GateTools&8] &r"
+
+# 成功消息
+success:
+  gate-created: "&a成功创建传送区域 &e%gate_name%"
+  gate-edited: "&a成功编辑传送区域 &e%gate_name%"
+  gate-deleted: "&a成功删除传送区域 &e%gate_name%"
+  config-reloaded: "&a配置文件已重载"
+  data-saved: "&a数据已保存"
+  teleport-success: "&a传送成功！"
+
+# 错误消息
+error:
+  no-permission: "&c你没有权限执行此命令"
+  gate-not-found: "&c传送区域 &e%gate_name% &c不存在"
+  gate-already-exists: "&c传送区域 &e%gate_name% &c已存在"
+  max-gates-reached: "&c已达到最大传送区域数量限制 (%max_gates%)"
+  invalid-location: "&c无效的坐标格式"
+  invalid-condition: "&c无效的条件配置"
+  world-not-found: "&c世界 &e%world% &c不存在"
+  teleport-failed: "&c传送失败"
+  teleport-cancelled: "&c传送已取消"
+  invalid-command: "&c未知的子命令: %command%"
+
+# 传送相关消息
+teleport:
+  confirm: "&a你已进入传送区域 &e%gate_name%&a，是否传送？"
+  confirm-buttons: "&a[&2是&a] &c[&4否&c]"
+  preparing: "&a正在准备传送，请稍候..."
+  countdown: "&e传送倒计时: &a%seconds% &e秒"
+
+# 条件检查消息
+condition:
+  # 权限相关
+  permission-required: "&c传送需要权限: &e%message_need_permission%"
+  permission-denied: "&c你没有所需的权限: &e%message_need_permission%"
+  
+  # 金钱相关
+  money-required: "&c传送需要金钱: &e%message_need_money%"
+  money-insufficient: "&c金钱不足！需要: &e%message_need_money%&c，当前: &e%current_money%"
+  money-cost: "&a扣除金钱: &e%message_cost_money%"
+  
+  # 经验相关
+  experience-required: "&c传送需要经验: &e%message_need_experience%"
+  experience-insufficient: "&c经验不足！需要: &e%message_need_experience%&c，当前: &e%current_experience%"
+  experience-cost: "&a扣除经验: &e%message_cost_experience%"
+
+# 比较符号转换
+operators:
+  "=": "需要"
+  "!=": "不需要"
+  ">": "大于"
+  ">=": "大于等于"
+  "<": "小于"
+  "<=": "小于等于"
+
+# 确认界面配置
+confirmation:
+  yes-button: "&a[是]"
+  no-button: "&c[否]"
+  yes-hover: "&a点击确认传送"
+  no-hover: "&c点击取消传送"
+  yes-command: "/gatetools confirm-teleport %gate_name%"
+  no-command: "/gatetools cancel-teleport %gate_name%"
+
+# 帮助消息
+help:
+  header: "&6=== GateTools 帮助 ==="
+  footer: "&6===================="
+  author: "&e作者: &fNSrank, Augment"
+  version: "&e版本: &f1.1"
+  commands:
+    set: "&e/gatetools set <角点1> <角点2> <配置名> <显示名> &7- 创建传送门"
+    edit: "&e/gatetools edit <配置名> <配置项> [参数] &7- 编辑传送门"
+    delete: "&e/gatetools delete <配置名> &7- 删除传送门"
+    reload: "&e/gatetools reload &7- 重载配置"
+    save: "&e/gatetools save &7- 保存数据"
+    help: "&e/gatetools help &7- 显示帮助"
+
+# 调试消息
+debug:
+  player-enter-gate: "&7[调试] 玩家 %player% 进入传送门: %gate_name%"
+  player-leave-gate: "&7[调试] 玩家 %player% 离开传送门: %gate_name%"
+  teleport-start: "&7[调试] 开始传送倒计时: %player% -> %gate_name%"
+  teleport-complete: "&7[调试] 传送完成: %player% -> %location%"
+  gate-loaded: "&7[调试] 已加载传送门: %gate_name%"
+  spatial-index-stats: "&7[调试] 空间索引统计: %stats%"
+
+# 删除确认消息
+delete-confirmation:
+  prompt: "&c确定要删除传送区域 &e%gate_name% &c吗？请在 %timeout% 秒内输入 &e/gatetools confirm &c确认删除"
+  expired: "&c删除确认已过期，请重新执行删除命令"
+  confirmed: "&a已确认删除传送区域 &e%gate_name%"
